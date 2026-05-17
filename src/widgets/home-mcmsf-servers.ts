@@ -70,6 +70,7 @@ export function createMCMSFServersWidget(api: ExtensionFactoryApi) {
     SimpleGrid,
     useToast,
     IconButton,
+    Skeleton,
   } = api.ChakraUI;
 
   return function MCMSFServersWidget() {
@@ -286,24 +287,20 @@ export function createMCMSFServersWidget(api: ExtensionFactoryApi) {
                   h: "80px",
                   w: "100%",
                   objectFit: "cover",
-                  fallback: React.createElement(Box, {
+                  fallback: React.createElement(Skeleton, {
                     h: "80px",
                     w: "100%",
-                    bg: "gray.100",
                     borderRadius: "md",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center"
-                  }, React.createElement(Text, { fontSize: "xs", color: "gray.400" }, "无图片"))
-                }) : React.createElement(Box, {
+                    startColor: "gray.100",
+                    endColor: "gray.200"
+                  })
+                }) : React.createElement(Skeleton, {
                   h: "80px",
                   w: "100%",
-                  bg: "gray.100",
                   borderRadius: "md",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center"
-                }, React.createElement(Text, { fontSize: "xs", color: "gray.400" }, "无图片")),
+                  startColor: "gray.100",
+                  endColor: "gray.200"
+                }),
                 React.createElement(
                   HStack,
                   { justify: "space-between", align: "start" },

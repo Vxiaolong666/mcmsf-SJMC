@@ -53,6 +53,7 @@ interface ServerStatus {
   };
   pureMotd: string;
   icon: string;
+  status_img: string;
 }
 
 interface ServerStatusResponse {
@@ -87,6 +88,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
     useDisclosure,
     List,
     ListItem,
+    Skeleton,
   } = api.ChakraUI;
 
   return function ServerDetailPage() {
@@ -184,6 +186,79 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
         });
       }
     }, [host.actions, toast]);
+
+    const MC_COLORS: Record<string, string> = {
+      "0": "#000000",
+      "1": "#0000AA",
+      "2": "#00AA00",
+      "3": "#00AAAA",
+      "4": "#AA0000",
+      "5": "#AA00AA",
+      "6": "#FFAA00",
+      "7": "#AAAAAA",
+      "8": "#555555",
+      "9": "#5555FF",
+      "a": "#55FF55",
+      "b": "#55FFFF",
+      "c": "#FF5555",
+      "d": "#FF55FF",
+      "e": "#FFFF55",
+      "f": "#FFFFFF"
+    };
+
+    const parseMotd = function parseMotd(motdText: string) {
+      if (!motdText) return null;
+
+      const parts: Array<{ text: string; color?: string; bold?: boolean; italic?: boolean; underlined?: boolean; strikethrough?: boolean }> = [];
+      let currentPart = { text: "" };
+      let i = 0;
+
+      while (i < motdText.length) {
+        if (motdText[i] === "§" && i + 1 < motdText.length) {
+          const code = motdText[i + 1].toLowerCase();
+          
+          if (currentPart.text) {
+            parts.push(currentPart);
+          }
+          
+          currentPart = { text: "" };
+          
+          if (MC_COLORS[code]) {
+            currentPart.color = MC_COLORS[code];
+          } else if (code === "l") {
+            currentPart.bold = true;
+          } else if (code === "o") {
+            currentPart.italic = true;
+          } else if (code === "n") {
+            currentPart.underlined = true;
+          } else if (code === "m") {
+            currentPart.strikethrough = true;
+          } else if (code === "r") {
+            currentPart = { text: "" };
+          }
+          
+          i += 2;
+        } else {
+          currentPart.text += motdText[i];
+          i++;
+        }
+      }
+
+      if (currentPart.text) {
+        parts.push(currentPart);
+      }
+
+      return parts.map(function(part, index) {
+        const style: React.CSSProperties = {};
+        if (part.color) style.color = part.color;
+        if (part.bold) style.fontWeight = "bold";
+        if (part.italic) style.fontStyle = "italic";
+        if (part.underlined) style.textDecoration = style.textDecoration ? style.textDecoration + " underline" : "underline";
+        if (part.strikethrough) style.textDecoration = style.textDecoration ? style.textDecoration + " line-through" : "line-through";
+
+        return React.createElement("span", { key: index, style: style }, part.text);
+      });
+    };
 
     const handleCopyIP = function handleCopyIP(ip: string) {
       navigator.clipboard.writeText(ip).then(function onCopySuccess() {
@@ -427,14 +502,12 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
                 w: "100%",
                 maxH: "300px",
                 objectFit: "cover",
-                fallback: React.createElement(Box, {
+                fallback: React.createElement(Skeleton, {
                   h: "200px",
                   w: "100%",
-                  bg: "gray.100",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center"
-                }, React.createElement(Text, { color: "gray.400" }, "更多内容正在赶来...."))
+                  startColor: "gray.100",
+                  endColor: "gray.200"
+                })
               })
             ),
             images.length > 1 && React.createElement(
@@ -602,11 +675,37 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
                   p: 2,
                   bg: "gray.50",
                   borderRadius: "md",
-                  fontSize: "xs",
+                  fontSize: "sm",
                   fontFamily: "monospace",
-                  whiteSpace: "pre-wrap"
+                  whiteSpace: "pre-wrap",
+                  lineHeight: "1.6"
                 },
-                serverStatus.pureMotd
+                parseMotd(serverStatus.pureMotd)
+              )
+            ),
+            serverStatus.server_status === "运行中" && serverStatus.status_img && React.createElement(
+              VStack,
+              { align: "stretch", spacing: 2 },
+              React.createElement(Text, { fontSize: "xs", color: "gray.500" }, "服务器状态图:"),
+              React.createElement(
+                Box,
+                {
+                  borderRadius: "md",
+                  overflow: "hidden",
+                  border: "1px solid",
+                  borderColor: "gray.200"
+                },
+                React.createElement(Image, {
+                  src: serverStatus.status_img,
+                  alt: "服务器状态图",
+                  w: "100%",
+                  fallback: React.createElement(Skeleton, {
+                    h: "100px",
+                    w: "100%",
+                    startColor: "gray.100",
+                    endColor: "gray.200"
+                  })
+                })
               )
             )
           )
