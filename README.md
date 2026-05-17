@@ -194,7 +194,6 @@ npm run build -- --obfuscate=off
 ## 💬 联系方式
 
 - 作者：Loong
-- Email：2257923688@qq.com
 - GitHub：[@Vxiaolong666](https://github.com/Vxiaolong666)
 
 ## 🙏 致谢
