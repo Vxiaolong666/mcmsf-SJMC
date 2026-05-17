@@ -27,6 +27,9 @@ lerna-debug.log*
 /target
 /out
 
+# exception for release builds
+!dist/*.sjmclx
+
 # env files (can opt-in for committing if needed)
 .env
 
