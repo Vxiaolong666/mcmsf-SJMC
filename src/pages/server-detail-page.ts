@@ -210,7 +210,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
       if (!motdText) return null;
 
       const parts: Array<{ text: string; color?: string; bold?: boolean; italic?: boolean; underlined?: boolean; strikethrough?: boolean }> = [];
-      let currentPart = { text: "" };
+      let currentPart: { text: string; color?: string; bold?: boolean; italic?: boolean; underlined?: boolean; strikethrough?: boolean } = { text: "" };
       let i = 0;
 
       while (i < motdText.length) {
@@ -234,7 +234,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
           } else if (code === "m") {
             currentPart.strikethrough = true;
           } else if (code === "r") {
-            currentPart = { text: "" };
+            currentPart = { text: "" } as { text: string; color?: string; bold?: boolean; italic?: boolean; underlined?: boolean; strikethrough?: boolean };
           }
           
           i += 2;
@@ -249,7 +249,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
       }
 
       return parts.map(function(part, index) {
-        const style: React.CSSProperties = {};
+        const style: any = {};
         if (part.color) style.color = part.color;
         if (part.bold) style.fontWeight = "bold";
         if (part.italic) style.fontStyle = "italic";
@@ -803,7 +803,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
               },
               flex: 1
             },
-            "复制服务器IP"
+            "复制服务器地址"
           ),
           React.createElement(
             Button,
@@ -814,7 +814,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
               onClick: handleOpenInBrowser,
               flex: 1
             },
-            "在浏览器中打开"
+            "更多服务器信息"
           )
         )
       ),
