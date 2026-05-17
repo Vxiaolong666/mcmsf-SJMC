@@ -1,0 +1,10 @@
+{
+  "identifier": "mcmsf.hellow",
+  "name": "McMSF浆果服服务器",
+  "description": "开放的 Minecraft 服务器宣传平台，致力于连接服务器与玩家，提供服务器展示、资源共享与互动支持，共建自由协作的 Minecraft 多元生态",
+  "author": "Loong",
+  "version": "0.1.0",
+  "frontend": {
+    "entry": "frontend/index.js"
+  }
+}

@@ -1,0 +1,82 @@
+# McMSF浆果服服务器
+
+Generated with `create-sjmcl-extension`.
+
+## Scripts
+
+- `npm install`
+- `npm run build`
+- `npm run bump -- 1.2.3`
+
+## Build
+
+### Entry and Output
+
+`npm run build` creates:
+
+- `dist/mcmsf.hellow/`
+- `dist/mcmsf.hellow-<version>.sjmclx`
+
+The bundled frontend is written to `frontend/index.js`, matching `sjmcl.ext.json`.
+You can split the implementation across as many local files as you want under `src/`; the build step bundles them into that single runtime entry.
+The generated example page uses TSX component trees, so you can start from JSX/TSX immediately instead of staying with manual `React.createElement(...)` calls.
+
+### Build Modes
+
+| Flag | Value | Default | Effect |
+| --- | --- | --- | --- |
+| `--mode` | `production`, `development` | `production` | Selects the overall build profile and sets `process.env.NODE_ENV`. `production` enables syntax and whitespace minification for a compact release bundle; `development` keeps the output more readable for inspection and debugging. |
+| `--obfuscate` | none or boolean (`true`, `false`, `1`, `0`, `yes`, `no`, `on`, `off`) | on in production, off in development | Controls identifier minification only. It renames local symbols to shorter names, but it does not switch build mode or enable syntax/whitespace minification by itself. |
+
+In short: `--mode` chooses the overall output style, while `--obfuscate` only toggles identifier mangling.
+
+When you pass flags through `npm run`, add `--` before the build flags so npm forwards them to `scripts/build.mjs`:
+
+```bash
+npm run build
+npm run build -- --mode development
+npm run build -- --obfuscate
+npm run build -- --obfuscate=off
+npm run build -- --mode development --obfuscate=off
+```
+
+### Host-Provided Singleton Dependencies
+
+The SJMCL host already provides these dependencies:
+
+| Package | Use Instead |
+| --- | --- |
+| `react` | `api.React` |
+| `@chakra-ui/react` | `api.ChakraUI` |
+
+Direct imports from those packages are rejected at build time.
+
+If a third-party dependency bundles them transitively, the build still succeeds but prints warnings with:
+
+- the bundled singleton package name
+- the approximate byte contribution in the final output
+- one or more dependency chains from your source file to the bundled package
+
+This makes bundle impact visible without blocking common dependency patterns.
+
+## Project Layout
+
+- `src/index.ts`
+  Entry point for your source tree.
+- `src/pages/example-page.tsx`
+  Example TSX custom page and standalone page component.
+- `src/widgets/`
+  Home widget components.
+- `src/pages/`
+  Additional page modules such as the settings page.
+- `src/modals/`
+  Custom modal components opened from extension actions or UI slots.
+- `src/types/host.ts`
+  Minimal local typings for the injected SJMCL extension API.
+
+## Notes
+
+- Put optional static files under `assets/`.
+- Add an optional `icon.png` at the project root.
+- Add optional persistent files under `data/`.
+- The build script copies `sjmcl.ext.json`, `icon.png`, `assets/`, and `data/` when present.
