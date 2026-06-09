@@ -22,6 +22,8 @@ interface MCMSFServerDetail {
   submit_time: string;
   username: string;
   pageurl: string;
+  qq_group?: string;       // 官方QQ群
+  official_website?: string; // 官网地址
 }
 
 interface MCMSFDetailResponse {
@@ -61,6 +63,33 @@ interface ServerStatusResponse {
   data: ServerStatus;
 }
 
+
+// Convert HTML string to clean plain text
+// Handles: raw tags, entity-encoded tags, double-encoded, style attributes, etc.
+function htmlToText(html: string): string {
+  if (!html) return "";
+  var text = html;
+  // Multiple passes: decode entities first, then strip tags, repeat for double-encoding
+  for (var pass = 0; pass < 3; pass++) {
+    // Decode HTML entities (&lt; &gt; &amp; &quot; &#nnn; &name;)
+    text = text.replace(/&amp;/g, "&");
+    text = text.replace(/&lt;/g, "<");
+    text = text.replace(/&gt;/g, ">");
+    text = text.replace(/&quot;/g, '"');
+    text = text.replace(/&#39;/g, "'");
+    text = text.replace(/&#(\d+);/g, function(_s: string, n: string) { return String.fromCharCode(parseInt(n, 10)); });
+    text = text.replace(/&nbsp;/g, " ");
+    text = text.replace(/&(mdash|ndash|hellip|copy|trade|reg);/g, function(_s: string) { return ""; });
+  }
+  // Now strip all HTML tags
+  text = text.replace(/<br\s*\/?>/gi, "\n");
+  text = text.replace(/<\/(p|div|h[1-6]|li|tr|blockquote|ul|ol)>/gi, "\n");
+  text = text.replace(/<[^>]+>/g, "");
+  // Final cleanup
+  text = text.split("\n").map(function(line: string) { return line.trim(); }).filter(function(line: string) { return line.length > 0; }).join("\n");
+  return text.trim();
+}
+
 export function createServerDetailPage(api: ExtensionFactoryApi) {
   const React = api.React;
   const {
@@ -70,6 +99,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
     Text,
     VStack,
     HStack,
+    Flex,
     Badge,
     Spinner,
     Alert,
@@ -469,7 +499,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
               IconButton,
               {
                 "aria-label": "返回",
-                icon: React.createElement("span", null, "←"),
+                icon: React.createElement("span", null, "\u2190"),
                 size: "sm",
                 variant: "ghost",
                 onClick: function onBackClick() {
@@ -517,7 +547,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
                 IconButton,
                 {
                   "aria-label": "上一张",
-                  icon: React.createElement("span", null, "‹"),
+                  icon: React.createElement("span", null, "\u2039"),
                   position: "absolute",
                   left: 2,
                   top: "50%",
@@ -537,7 +567,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
                 IconButton,
                 {
                   "aria-label": "下一张",
-                  icon: React.createElement("span", null, "›"),
+                  icon: React.createElement("span", null, "\u203A"),
                   position: "absolute",
                   right: 2,
                   top: "50%",
@@ -599,7 +629,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
         React.createElement(Divider, null),
         React.createElement(VStack, { align: "stretch", spacing: 3 },
           React.createElement(Text, { fontSize: "sm", fontWeight: "bold" }, "服务器简介"),
-          React.createElement(Text, { fontSize: "sm", color: "gray.600", whiteSpace: "pre-wrap" }, server.descriptison || server.paysketch || "暂无简介")
+          React.createElement(Text, { fontSize: "sm", color: "gray.600", whiteSpace: "pre-wrap" }, htmlToText(server.descriptison || server.paysketch || "\u6682\u65E0\u7B80\u4ECB"))
         ),
         React.createElement(Divider, null),
         React.createElement(
@@ -744,6 +774,41 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
             React.createElement(Text, { fontSize: "sm", color: "gray.500" }, "QQ群:"),
             React.createElement(Text, { fontSize: "sm", fontFamily: "monospace" }, server.sketch)
           ),
+          server.qq_group && React.createElement(
+            HStack,
+            { spacing: 2 },
+            React.createElement(Text, { fontSize: "sm", color: "gray.500" }, "\u5B98\u65B9QQ\u7FA4:"),
+            React.createElement(Text, { fontSize: "sm", fontFamily: "monospace", color: "blue.600" }, server.qq_group),
+            React.createElement(Button, {
+              size: "xs",
+              variant: "outline",
+              colorScheme: "blue",
+              onClick: function onCopyQQClick() {
+                handleCopyIP(server.qq_group || "");
+              }
+            }, "\u590D\u5236")
+          ),
+          server.official_website && React.createElement(
+            HStack,
+            { spacing: 2 },
+            React.createElement(Text, { fontSize: "sm", color: "gray.500" }, "\u5B98\u7F51:"),
+            React.createElement(Text, {
+              fontSize: "sm",
+              color: "blue.600",
+              cursor: "pointer",
+              onClick: function onWebsiteClick() {
+                void host.actions.openExternalLink(server.official_website);
+              }
+            }, server.official_website),
+            React.createElement(Button, {
+              size: "xs",
+              variant: "outline",
+              colorScheme: "blue",
+              onClick: function onOpenWebsiteClick() {
+                void host.actions.openExternalLink(server.official_website);
+              }
+            }, "\u6253\u5F00")
+          ),
           server.url && React.createElement(
             VStack,
             { align: "stretch", spacing: 2 },
@@ -782,16 +847,25 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
         ),
         React.createElement(
           HStack,
-          { spacing: 3, pt: 4 },
+          {
+            position: "sticky",
+            bottom: 0,
+            py: 3,
+            px: 4,
+            mt: 4,
+            spacing: 3,
+            align: "stretch",
+          },
           React.createElement(
             Button,
             {
               size: "sm",
               colorScheme: "green",
               onClick: handleAddToInstance,
-              flex: 1
+              flex: 1,
+              leftIcon: React.createElement("span", null, "\u2795"),
             },
-            "添加到实例"
+            "\u6DFB\u52A0\u5230\u5B9E\u4F8B"
           ),
           React.createElement(
             Button,
@@ -801,9 +875,10 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
               onClick: function onCopyClick() {
                 handleCopyIP(server.paycontact);
               },
-              flex: 1
+              flex: 1,
+              leftIcon: React.createElement("span", null, "\u2398"),
             },
-            "复制服务器地址"
+            "\u590D\u5236IP"
           ),
           React.createElement(
             Button,
@@ -812,9 +887,10 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
               variant: "outline",
               colorScheme: "blue",
               onClick: handleOpenInBrowser,
-              flex: 1
+              flex: 1,
+              leftIcon: React.createElement("span", null, "\u2197"),
             },
-            "更多服务器信息"
+            "\u66F4\u591A\u4FE1\u606F"
           )
         )
       ),

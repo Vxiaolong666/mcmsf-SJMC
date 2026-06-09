@@ -2,6 +2,7 @@ import type { ExtensionFactory, ExtensionFactoryApi } from "./types/host";
 import { createServerDetailPage } from "./pages/server-detail-page";
 import { createSettingsPage } from "./pages/settings-page";
 import { createMCMSFServersWidget } from "./widgets/home-mcmsf-servers";
+import { createFeaturedServerWidget } from "./widgets/home-featured-server";
 
 (function registerMCMSFExtension(factory: ExtensionFactory) {
   const token = document.currentScript?.dataset?.extensionToken || "";
@@ -18,6 +19,14 @@ import { createMCMSFServersWidget } from "./widgets/home-mcmsf-servers";
 })(function createExtension(api: ExtensionFactoryApi) {
   return {
     homeWidgets: [
+      {
+        key: "mcmsf-featured",
+        title: "服务器精选",
+        description: "随机推荐一个MCMSF精选服务器，大图展示",
+        defaultWidth: 400,
+        minWidth: 350,
+        Component: createFeaturedServerWidget(api),
+      },
       {
         key: "mcmsf-servers",
         title: "浆果服推荐服务器",

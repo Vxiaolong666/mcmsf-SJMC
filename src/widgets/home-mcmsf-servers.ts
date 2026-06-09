@@ -3,6 +3,27 @@ import type { ExtensionFactoryApi } from "../types/host";
 const MCMSF_API_BASE = "https://mcmsf.com/api";
 const MCMSF_WEBSITE = "https://mcmsf.com";
 
+// Convert HTML string to clean plain text
+function htmlToText(html: string): string {
+  if (!html) return "";
+  var text = html;
+  for (var pass = 0; pass < 3; pass++) {
+    text = text.replace(/&amp;/g, "&");
+    text = text.replace(/&lt;/g, "<");
+    text = text.replace(/&gt;/g, ">");
+    text = text.replace(/&quot;/g, '"');
+    text = text.replace(/&#39;/g, "'");
+    text = text.replace(/&#(\d+);/g, function(_s: string, n: string) { return String.fromCharCode(parseInt(n, 10)); });
+    text = text.replace(/&nbsp;/g, " ");
+    text = text.replace(/&(mdash|ndash|hellip|copy|trade|reg);/g, function(_s: string) { return ""; });
+  }
+  text = text.replace(/<br\s*\/?>/gi, "\n");
+  text = text.replace(/<\/(p|div|h[1-6]|li|tr|blockquote|ul|ol)>/gi, "\n");
+  text = text.replace(/<[^>]+>/g, "");
+  text = text.split("\n").map(function(line: string) { return line.trim(); }).filter(function(line: string) { return line.length > 0; }).join("\n");
+  return text.trim();
+}
+
 interface MCMSFServer {
   id: string | number;
   name: string;
@@ -44,9 +65,9 @@ interface SortOption {
 }
 
 const SORT_OPTIONS: SortOption[] = [
-  { value: "hot", label: "热门", icon: "🔥" },
-  { value: "random", label: "推荐", icon: "⭐" },
-  { value: "time", label: "最新", icon: "🕐" },
+  { value: "hot", label: "热门", icon: "\u25B2" },
+  { value: "random", label: "推荐", icon: "\u2605" },
+  { value: "time", label: "最新", icon: "\u25B6" },
 ];
 
 export function createMCMSFServersWidget(api: ExtensionFactoryApi) {
@@ -79,7 +100,13 @@ export function createMCMSFServersWidget(api: ExtensionFactoryApi) {
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(null as string | null);
     const [currentSort, setCurrentSort] = React.useState("random" as SortType);
+    const [enabled, setEnabled] = host.state.useExtensionState("list_enabled", true);
     const toast = useToast();
+
+    // Hide if disabled
+    if (!enabled) {
+      return null;
+    }
 
     const fetchServers = React.useCallback(async function fetchServersImpl(sort: SortType) {
       setLoading(true);
@@ -147,6 +174,10 @@ export function createMCMSFServersWidget(api: ExtensionFactoryApi) {
           "mcjpg": "MCJPG",
           "mscpo": "MSCPO",
           "member": "成员服",
+          "1": "成员服",
+          "0": "MCJPG",
+          "2": "MSCPO",
+          "3": "其他",
         };
         return typeMap[type.toLowerCase()] || type;
       }
@@ -166,6 +197,10 @@ export function createMCMSFServersWidget(api: ExtensionFactoryApi) {
           "mcjpg": "blue",
           "mscpo": "purple",
           "member": "green",
+          "1": "green",
+          "0": "blue",
+          "2": "purple",
+          "3": "gray",
         };
         return colorMap[type.toLowerCase()] || "gray";
       }
@@ -236,7 +271,7 @@ export function createMCMSFServersWidget(api: ExtensionFactoryApi) {
           IconButton,
           {
             "aria-label": "刷新",
-            icon: React.createElement("span", null, "↻"),
+            icon: React.createElement("span", null, "\u21BB"),
             size: "sm",
             variant: "outline",
             onClick: function onRefreshClick() {
@@ -319,7 +354,7 @@ export function createMCMSFServersWidget(api: ExtensionFactoryApi) {
                   fontSize: "xs",
                   color: "gray.600",
                   noOfLines: 2
-                }, server.descriptison || server.paysketch || "暂无简介"),
+                }, htmlToText(server.descriptison || server.paysketch || "\u6682\u65E0\u7B80\u4ECB")),
                 React.createElement(
                   HStack,
                   { spacing: 2, wrap: "wrap" },
@@ -374,7 +409,7 @@ export function createMCMSFServersWidget(api: ExtensionFactoryApi) {
             onClick: handleOpenMCMSFWebsite,
             flex: 1
           },
-          "前往 MCMSF 查看更多服务器"
+          "前往 MCMSF 查看更多服务器 \u2192"
         )
       )
     );
