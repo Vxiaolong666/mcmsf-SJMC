@@ -863,7 +863,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
               colorScheme: "green",
               onClick: handleAddToInstance,
               flex: 1,
-              leftIcon: React.createElement("span", null, "\u2795"),
+              leftIcon: React.createElement("span", null, "+"),
             },
             "\u6DFB\u52A0\u5230\u5B9E\u4F8B"
           ),
@@ -884,8 +884,7 @@ export function createServerDetailPage(api: ExtensionFactoryApi) {
             Button,
             {
               size: "sm",
-              variant: "outline",
-              colorScheme: "blue",
+              colorScheme: "gray",
               onClick: handleOpenInBrowser,
               flex: 1,
               leftIcon: React.createElement("span", null, "\u2197"),

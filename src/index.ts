@@ -17,20 +17,24 @@ import { createFeaturedServerWidget } from "./widgets/home-featured-server";
 
   window.registerExtension(factory, token);
 })(function createExtension(api: ExtensionFactoryApi) {
+  const logoUrl = api.resolveAssetUrl("assets/company-logo.svg");
+
   return {
     homeWidgets: [
       {
         key: "mcmsf-featured",
-        title: "服务器精选",
+        title: "浆果服服务器精选",
         description: "随机推荐一个MCMSF精选服务器，大图展示",
+        icon: logoUrl,
         defaultWidth: 400,
         minWidth: 350,
         Component: createFeaturedServerWidget(api),
       },
       {
         key: "mcmsf-servers",
-        title: "浆果服推荐服务器",
+        title: "浆果服服务器推荐",
         description: "展示 MCMSF 精选服务器、热门服务器或本周推荐",
+        icon: logoUrl,
         defaultWidth: 400,
         minWidth: 350,
         Component: createMCMSFServersWidget(api),

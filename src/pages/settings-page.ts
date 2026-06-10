@@ -90,7 +90,7 @@ export function createSettingsPage(api: ExtensionFactoryApi) {
         HStack,
         { justify: "space-between", align: "center" },
         React.createElement(Text, { fontSize: "lg", fontWeight: "bold" }, "MCMSF 浆果服服务器"),
-        React.createElement(Badge, { colorScheme: "green", variant: "subtle" }, "v2.1.0")
+        React.createElement(Badge, { colorScheme: "green", variant: "subtle" }, "v2.2.1")
       ),
       React.createElement(Divider, null),
 

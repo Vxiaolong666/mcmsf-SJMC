@@ -213,6 +213,54 @@ export function createMCMSFServersWidget(api: ExtensionFactoryApi) {
       return colors[type] || "gray";
     };
 
+    const getGameModeColor = function getGameModeColor(tag: string): string {
+      const normalizedTag = tag.trim().toLowerCase();
+      const colorMap: Record<string, string> = {
+        // Chinese tags (lowercase for matching)
+        "\u751f\u5b58": "green",       // 生存
+        "\u751f\u7535": "yellow",      // 生电
+        "\u5efa\u7b51": "blue",        // 建筑
+        "rpg": "red",
+        "\u7a7a\u5c9b": "cyan",        // 空岛
+        "\u5c0f\u6e38\u620f": "orange", // 小游戏
+        "pvp": "pink",
+        "\u670d\u6218": "red",         // 伺服/服战
+        "\u6a21\u7ec4": "purple",      // 模组
+        "\u539f\u7248": "gray",        // 原版
+        "\u7ea2\u77f3": "orange",      // 红石
+        "\u5192\u9669": "teal",        // 冒险
+        "\u89d2\u8272": "purple",      // 角色
+        "\u521b\u610f": "blue",        // 创意
+        "mc": "green",
+        "java": "gray",
+        "bedrock": "teal",
+        // Additional common variations
+        "survival": "green",
+        "creative": "blue",
+        "adventure": "teal",
+        "skyblock": "cyan",
+        "minigames": "orange",
+      };
+
+      // Try exact match first (case-insensitive)
+      if (colorMap[normalizedTag]) {
+        return colorMap[normalizedTag];
+      }
+
+      // Try partial match for flexibility
+      const entries = Object.entries(colorMap);
+      for (const [key, color] of entries) {
+        if (normalizedTag.includes(key) || key.includes(normalizedTag)) {
+          return color;
+        }
+      }
+
+      // Default fallback with some variation based on tag hash
+      const hash = normalizedTag.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const colors = ["blue", "cyan", "teal", "green", "yellow", "orange", "red", "pink", "purple"];
+      return colors[hash % colors.length];
+    };
+
     if (loading) {
       return React.createElement(
         VStack,
@@ -357,12 +405,30 @@ export function createMCMSFServersWidget(api: ExtensionFactoryApi) {
                 }, htmlToText(server.descriptison || server.paysketch || "\u6682\u65E0\u7B80\u4ECB")),
                 React.createElement(
                   HStack,
-                  { spacing: 2, wrap: "wrap" },
+                  { spacing: 2, wrap: "wrap", align: "center" },
                   React.createElement(Badge, {
                     colorScheme: "blue",
                     variant: "outline",
                     fontSize: "xs"
                   }, server.version),
+                  // 玩法标签
+                  (function() {
+                    var moneyTags = [];
+                    if (server.money && typeof server.money === "string") {
+                      var tags = server.money.split(",").slice(0, 2);
+                      for (var ti = 0; ti < tags.length; ti++) {
+                        if (tags[ti].trim()) {
+                          moneyTags.push(React.createElement(Badge, {
+                            key: ti,
+                            colorScheme: getGameModeColor(tags[ti]),
+                            variant: "solid",
+                            fontSize: "2xs"
+                          }, tags[ti].trim()));
+                        }
+                      }
+                    }
+                    return moneyTags;
+                  })(),
                   React.createElement(
                     HStack,
                     { spacing: 1 },
