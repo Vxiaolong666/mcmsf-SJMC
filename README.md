@@ -1,6 +1,6 @@
 # McMSF浆果服服务器 - SJMCL扩展
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/Vxiaolong666/mcmsf-SJMC)
+[![Version](https://img.shields.io/badge/version-2.2.1-blue.svg)](https://github.com/Vxiaolong666/mcmsf-SJMC)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![SJMCL](https://img.shields.io/badge/SJMCL-Compatible-orange.svg)](https://mc.sjtu.cn/sjmcl/)
 
